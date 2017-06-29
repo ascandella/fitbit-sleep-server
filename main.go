@@ -1,27 +1,24 @@
 package main
 
 import (
-	"context"
 	"fmt"
 	"log"
+	"net/http"
+	"os"
 )
 
 func main() {
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
 	cfg, err := loadConfigFromJSON(secretsJSON)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	fmt.Println(cfg)
+	port := os.Getenv("AI_LIFE_PORT")
+	if port == "" {
+		port = "3030"
+	}
 
-	state := randStringRunes(24)
-	redir := cfg.AuthCodeURL(state)
-
-	handler := myHandler{}
-	registerServeMux(myHandler)
-	// TODO
-	select {}
+	handler := newHandler(cfg)
+	registerServeMux(handler)
+	http.ListenAndServe(fmt.Sprintf(":%s", port), nil)
 }

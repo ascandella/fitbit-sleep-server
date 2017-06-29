@@ -1,9 +1,36 @@
 package main
 
-import "net/http"
+import (
+	"io"
+	"net/http"
 
-type myHandler struct{}
+	"golang.org/x/oauth2"
+)
 
-func registerServeMux(handler myHandler) {
-	http.Handle("/foo", handler)
+type myHandler struct {
+	cfg   oauth2.Config
+	state string
+}
+
+func newHandler(cfg oauth2.Config) http.Handler {
+	state := randStringRunes(24)
+
+	h := myHandler{
+		cfg:   cfg,
+		state: state,
+	}
+
+	return h
+}
+
+func registerServeMux(handler http.Handler) {
+	http.Handle("/", handler)
+}
+
+func (m myHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	if r.URL.Path == "/oauth2/authorize" {
+		// TODO
+	}
+	// TODO
+	io.WriteString(w, "ok\n")
 }

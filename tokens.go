@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"os"
 
 	"golang.org/x/oauth2"
@@ -9,15 +10,20 @@ import (
 
 const secretsJSON = "secrets.json"
 
-func getToken() oauth2.TokenSource {
-
-	return oauth2.ReuseTokenSource(loadTokensFromJSON(secretsJSON), nil)
-}
-
 func loadConfigFromJSON(location string) (oauth2.Config, error) {
 	c := oauth2.Config{
 		Endpoint: fitbit.Endpoint,
 	}
 
 	f, err := os.Open(location)
+	if err != nil {
+		return c, err
+	}
+
+	p := json.NewDecoder(f)
+	if err := p.Decode(&c); err != nil {
+		return c, err
+	}
+
+	return c, nil
 }
