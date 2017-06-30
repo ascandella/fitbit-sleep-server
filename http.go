@@ -47,10 +47,16 @@ func (m *myHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		m.token = tkn
+
 		fmt.Printf("Token: %+v\n", tkn)
 		m.tknSource = oauth2.ReuseTokenSource(tkn, nil)
+
 		fmt.Println("Got token source: ", m.tknSource)
+
 		m.client = oauth2.NewClient(context.Background(), m.tknSource)
+
+		fmt.Println("Redirecting home")
+		http.Redirect(w, r, "/", http.StatusFound)
 
 		return
 	}
