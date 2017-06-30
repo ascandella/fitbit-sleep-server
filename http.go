@@ -14,6 +14,7 @@ type myHandler struct {
 	state     string
 	token     *oauth2.Token
 	tknSource oauth2.TokenSource
+	client    *http.Client
 }
 
 func newHandler(cfg oauth2.Config) http.Handler {
@@ -24,14 +25,14 @@ func newHandler(cfg oauth2.Config) http.Handler {
 		state: state,
 	}
 
-	return h
+	return &h
 }
 
 func registerServeMux(handler http.Handler) {
 	http.Handle("/", handler)
 }
 
-func (m myHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (m *myHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path == "/oauth2/callback" {
 		if r.URL.Query().Get("state") != m.state {
 			http.Error(w, "bad state", http.StatusForbidden)
@@ -46,9 +47,10 @@ func (m myHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		m.token = tkn
-		fmt.Printf("%+v\n", tkn)
+		fmt.Printf("Token: %+v\n", tkn)
 		m.tknSource = oauth2.ReuseTokenSource(tkn, nil)
 		fmt.Println("Got token source: ", m.tknSource)
+		m.client = oauth2.NewClient(context.Background(), m.tknSource)
 
 		return
 	}
