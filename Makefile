@@ -3,7 +3,7 @@ CONTAINER_NAME ?= $(IMAGE_NAME)
 
 .PHONY: build-docker
 build-docker:
-	docker build --label ai-life --tag '$(IMAGE_NAME)' .
+	docker build --tag '$(IMAGE_NAME)' .
 
 .PHONY: run-docker
 run-docker:
