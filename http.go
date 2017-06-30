@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"io"
 	"net/http"
 
@@ -29,8 +30,12 @@ func registerServeMux(handler http.Handler) {
 }
 
 func (m myHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	if r.URL.Path == "/oauth2/authorize" {
-		// TODO
+	if r.URL.Path == "/oauth2/callback" {
+		if r.URL.Query().Get("state") != m.state {
+			http.Error(w, "bad state", http.StatusForbidden)
+			return
+		}
+		fmt.Println("Got callback: %+v\n", r.URL.Query())
 		return
 	}
 
@@ -38,6 +43,10 @@ func (m myHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		redir := m.cfg.AuthCodeURL(m.state)
 		http.Redirect(w, r, redir, http.StatusFound)
 		return
+	}
+
+	if m.token.Valid() {
+		fmt.Fprintf(w, "%+v\n", m.token)
 	}
 
 	// TODO
