@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"net/http"
@@ -35,7 +36,17 @@ func (m myHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "bad state", http.StatusForbidden)
 			return
 		}
-		fmt.Println("Got callback: %+v\n", r.URL.Query())
+		fmt.Printf("Got callback: %+v\n", r.URL.Query())
+
+		tkn, err := m.cfg.Exchange(context.Background(), r.URL.Query().Get("code"))
+		if err != nil {
+			fmt.Printf("Error exchanging code: %+v\n", err)
+			http.Error(w, "Unable to exchange oauth2 code", http.StatusInternalServerError)
+			return
+		}
+		m.tkn = tkn
+		fmt.Printf("%+v\n", tkn)
+
 		return
 	}
 
