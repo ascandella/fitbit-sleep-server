@@ -10,9 +10,10 @@ import (
 )
 
 type myHandler struct {
-	cfg   oauth2.Config
-	state string
-	token *oauth2.Token
+	cfg       oauth2.Config
+	state     string
+	token     *oauth2.Token
+	tknSource oauth2.TokenSource
 }
 
 func newHandler(cfg oauth2.Config) http.Handler {
@@ -44,14 +45,17 @@ func (m myHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Unable to exchange oauth2 code", http.StatusInternalServerError)
 			return
 		}
-		m.tkn = tkn
+		m.token = tkn
 		fmt.Printf("%+v\n", tkn)
+		m.tknSource = oauth2.ReuseTokenSource(tkn, nil)
+		fmt.Println("Got token source: ", m.tknSource)
 
 		return
 	}
 
 	if m.token == nil {
 		redir := m.cfg.AuthCodeURL(m.state)
+		fmt.Println("Redirecting user to oauth2 fitbit: ", redir)
 		http.Redirect(w, r, redir, http.StatusFound)
 		return
 	}
