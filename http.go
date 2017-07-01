@@ -69,9 +69,10 @@ func (m *myHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if m.token.Valid() {
-		fmt.Fprintf(w, "%+v\n", m.token)
+		fmt.Fprintf(w, "Have valid token!")
+		return
 	}
 
 	// TODO
-	io.WriteString(w, "ok\n")
+	io.WriteString(w, "shouldn't get here\n")
 }
