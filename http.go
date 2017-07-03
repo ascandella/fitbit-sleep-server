@@ -102,7 +102,7 @@ func (m *myHandler) getAndCacheSleep(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Printf("Data: %+v\n", log)
+	m.log.Info("Received data", zap.Any("data", log))
 	sleepTemplate.Execute(w, log.Sleep[0])
 }
 

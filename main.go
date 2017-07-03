@@ -8,6 +8,7 @@ import (
 	"os"
 
 	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 )
 
 var (
@@ -31,7 +32,9 @@ func main() {
 		port = *portFlag
 	}
 
-	logger, err := zap.NewDevelopment()
+	lcfg := zap.NewDevelopmentConfig()
+	lcfg.EncoderConfig.EncodeLevel = zapcore.LowercaseColorLevelEncoder
+	logger, err := lcfg.Build()
 	if err != nil {
 		log.Fatal(err)
 	}
