@@ -61,7 +61,7 @@ func (m *myHandler) getAndCacheSleep(w http.ResponseWriter, r *http.Request) {
 	u := sleepEndpoint
 	date := r.URL.Query().Get("date")
 	if date != "" {
-		u += "/date/" + date + ".json"
+		u += "date/" + date + ".json"
 	} else {
 		afterTime := time.Now().Add(-72 * time.Hour)
 		after := strings.Split(afterTime.Format(time.RFC3339), "T")[0]
