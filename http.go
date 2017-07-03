@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"net/url"
+	"strings"
 	"time"
 
 	"golang.org/x/oauth2"
@@ -64,8 +64,8 @@ func (m *myHandler) getAndCacheSleep(w http.ResponseWriter, r *http.Request) {
 		u += "/date/" + date + ".json"
 	} else {
 		afterTime := time.Now().Add(-72 * time.Hour)
-		after := afterTime.Format(time.RFC3339)
-		u += "list.json?limit=3&offset=0&afterDate=" + url.PathEscape(after[:len(after)-1])
+		after := strings.Split(afterTime.Format(time.RFC3339), "T")[0]
+		u += "list.json?limit=3&offset=0&afterDate=" + after
 	}
 	sleep, err := m.client.Get(u)
 	if err != nil {
