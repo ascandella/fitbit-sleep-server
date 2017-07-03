@@ -2,18 +2,19 @@ package main
 
 import (
 	"encoding/json"
-	"io/ioutil"
+	"os"
 
 	"golang.org/x/oauth2"
 )
 
 func loadTokenFromFile(fname string) (*oauth2.Token, error) {
-	f, err := ioutil.ReadFile(fname)
+	f, err := os.Open(fname)
 	if err != nil {
 		return nil, err
 	}
 	tkn := &oauth2.Token{}
-	if err := json.Unmarshal(f, tkn); err != nil {
+	p := json.NewDecoder(f)
+	if err := p.Decode(tkn); err != nil {
 		return nil, err
 	}
 
