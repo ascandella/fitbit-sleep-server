@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"time"
 )
 
@@ -15,5 +14,5 @@ type sleepLog struct {
 func (s sleepLog) MostRecent() string {
 	log := s.Sleep[0]
 	ms := time.Duration(log.DurationMS) * time.Millisecond
-	return fmt.Sprintf("%s: %s", log.Date, ms.String())
+	return ms.String()
 }
