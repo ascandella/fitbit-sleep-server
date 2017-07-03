@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
@@ -34,6 +35,9 @@ func main() {
 
 	lcfg := zap.NewDevelopmentConfig()
 	lcfg.EncoderConfig.EncodeLevel = zapcore.LowercaseColorLevelEncoder
+	lcfg.EncoderConfig.EncodeTime = func(t time.Time, enc zapcore.PrimitiveArrayEncoder) {
+		enc.AppendString(t.Format("2006-01-02 15:04:05"))
+	}
 	logger, err := lcfg.Build()
 	if err != nil {
 		log.Fatal(err)

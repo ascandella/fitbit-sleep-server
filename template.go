@@ -12,12 +12,11 @@ var sleepTemplate = template.Must(template.New("main").Parse(`
 <body>
 
 	<div class="container">
-		<h1>How much sleep did Aiden get?</h1>
+		<h3>How much sleep did Aiden get?</h3>
 		<p class="lead">{{ .MostRecent }}</p>
 
 		<h3>Date</h3>
 		<p>{{ .Date }}</p>
-
 	</div>
 </body>
 `))
