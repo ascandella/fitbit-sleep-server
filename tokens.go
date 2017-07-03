@@ -8,7 +8,7 @@ import (
 	"golang.org/x/oauth2/fitbit"
 )
 
-const secretsJSON = "secrets.json"
+const defaultCredentials = "secrets.json"
 
 func loadConfigFromJSON(location string) (oauth2.Config, error) {
 	c := oauth2.Config{

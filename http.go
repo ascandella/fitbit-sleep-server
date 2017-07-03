@@ -10,6 +10,8 @@ import (
 	"strings"
 	"time"
 
+	"go.uber.org/zap"
+
 	"golang.org/x/oauth2"
 )
 
@@ -19,14 +21,16 @@ type myHandler struct {
 	token     *oauth2.Token
 	tknSource oauth2.TokenSource
 	client    *http.Client
+	log       *zap.Logger
 }
 
-func newHandler(cfg oauth2.Config) http.Handler {
+func newHandler(cfg oauth2.Config, log *zap.Logger) *myHandler {
 	state := randStringRunes(24)
 
 	h := myHandler{
 		cfg:   cfg,
 		state: state,
+		log:   log,
 	}
 
 	return &h
@@ -42,16 +46,15 @@ func (m *myHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		m.handleCallback(w, r)
 	case "/aiden":
 		redir := m.cfg.AuthCodeURL(m.state)
-		fmt.Println("Redirecting user to oauth2 fitbit: ", redir)
+		m.log.Info("Redirecting user to oauth2 fitbit", zap.String("url", redir))
 		http.Redirect(w, r, redir, http.StatusFound)
 	case "/":
 		if m.token.Valid() {
-			fmt.Println("Have valid token")
+			m.log.Info("Have valid token")
 			m.getAndCacheSleep(w, r)
 			return
 		}
-
-		fmt.Println("No token -- need to hit /aiden to authorize")
+		m.log.Error("No token -- need to hit /aiden to authorize")
 		http.Error(w, "no token -- aiden must have screwed something up", http.StatusInternalServerError)
 	}
 }
@@ -73,7 +76,7 @@ func (m *myHandler) getAndCacheSleep(w http.ResponseWriter, r *http.Request) {
 	sleep, err := m.client.Get(u)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
-		fmt.Printf("Got error from %q: %s\n", u, err.Error())
+		m.log.Error("Got error from from Fitbit API", zap.String("url", u), zap.Error(err))
 		return
 	}
 
@@ -112,7 +115,7 @@ func (m *myHandler) handleCallback(w http.ResponseWriter, r *http.Request) {
 
 	tkn, err := m.cfg.Exchange(context.Background(), r.URL.Query().Get("code"))
 	if err != nil {
-		fmt.Printf("Error exchanging code: %+v\n", err)
+		m.log.Error("Error exchanging code", zap.Error(err))
 		http.Error(w, "Unable to exchange oauth2 code", http.StatusInternalServerError)
 		return
 	}
@@ -125,11 +128,12 @@ func (m *myHandler) handleCallback(w http.ResponseWriter, r *http.Request) {
 func (m *myHandler) registerToken(tkn *oauth2.Token) {
 	m.token = tkn
 
-	fmt.Printf("Token: %+v\n", tkn)
+	m.log.Info("Registering token", zap.String("token", tkn.AccessToken))
+	bs, _ := json.Marshal(tkn)
+	fmt.Printf(string(bs))
 	m.tknSource = oauth2.ReuseTokenSource(tkn, nil)
 
-	fmt.Println("Got token source: ", m.tknSource)
+	m.log.Debug("Got token source", zap.String("source", fmt.Sprintf("%s", m.tknSource)))
 
 	m.client = oauth2.NewClient(context.Background(), m.tknSource)
-
 }

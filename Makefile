@@ -19,6 +19,6 @@ kill-docker:
 
 .PHONY: test
 test:
-	@go test -v .
+	@go test -v -cover .
 
 .DEFAULT_GOAL := test
