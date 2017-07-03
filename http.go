@@ -4,7 +4,9 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
+	"os"
 	"strings"
 	"time"
 
@@ -77,6 +79,7 @@ func (m *myHandler) getAndCacheSleep(w http.ResponseWriter, r *http.Request) {
 	if sleep.StatusCode != http.StatusOK {
 		http.Error(w, "Got non-200 from fitbit sleep API", http.StatusInternalServerError)
 		fmt.Printf("Got bad status from %q: %s\n", u, sleep.Status)
+		io.Copy(os.Stdout, sleep.Body)
 		return
 	}
 
