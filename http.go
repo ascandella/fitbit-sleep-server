@@ -91,7 +91,7 @@ func (m *myHandler) getAndCacheSleep(w http.ResponseWriter, r *http.Request) {
 
 	defer func() {
 		if err := sleep.Body.Close(); err != nil {
-			fmt.Printf("[ERROR] Couldn't close body: %s", err.Error())
+			m.log.Error("Couldn't close body", zap.Error(err))
 		}
 	}()
 
@@ -111,7 +111,7 @@ func (m *myHandler) handleCallback(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "bad state", http.StatusForbidden)
 		return
 	}
-	fmt.Printf("Got callback: %+v\n", r.URL.Query())
+	m.log.Info("Got callback: %+v\n", zap.String("query", r.URL.Query().Encode()))
 
 	tkn, err := m.cfg.Exchange(context.Background(), r.URL.Query().Get("code"))
 	if err != nil {
