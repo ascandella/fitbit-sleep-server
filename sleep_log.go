@@ -4,15 +4,16 @@ import (
 	"time"
 )
 
-type sleepLog struct {
-	Sleep []struct {
-		Date       string `json:"dateOfSleep"`
-		DurationMS int64  `json:"duration"`
-	} `json:"sleep"`
+type sleep struct {
+	Date       string `json:"dateOfSleep"`
+	DurationMS int64  `json:"duration"`
 }
 
-func (s sleepLog) MostRecent() string {
-	log := s.Sleep[0]
-	ms := time.Duration(log.DurationMS) * time.Millisecond
+type sleepLog struct {
+	Sleep []sleep `json:"sleep"`
+}
+
+func (s sleep) MostRecent() string {
+	ms := time.Duration(s.DurationMS) * time.Millisecond
 	return ms.String()
 }
