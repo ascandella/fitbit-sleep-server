@@ -78,15 +78,9 @@ const sleepEndpoint = "https://api.fitbit.com/1.2/user/-/sleep/"
 
 func (m *myHandler) getAndCacheSleep(w http.ResponseWriter, r *http.Request) {
 	// TODO caching
-	u := sleepEndpoint
-	date := r.URL.Query().Get("date")
-	if date != "" {
-		u += "date/" + date + ".json"
-	} else {
-		afterTime := time.Now().Add(-72 * time.Hour)
-		after := strings.Split(afterTime.Format(time.RFC3339), "T")[0]
-		u += "list.json?limit=3&offset=0&sort=desc&afterDate=" + after
-	}
+	afterTime := time.Now().Add(-72 * time.Hour)
+	after := strings.Split(afterTime.Format(time.RFC3339), "T")[0]
+	u := sleepEndpoint + "list.json?limit=3&offset=0&sort=desc&afterDate=" + after
 
 	sleep, err := m.client.Get(u)
 	if err != nil {
