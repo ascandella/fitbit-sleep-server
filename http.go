@@ -68,6 +68,7 @@ func (m *myHandler) getAndCacheSleep(w http.ResponseWriter, r *http.Request) {
 		after := strings.Split(afterTime.Format(time.RFC3339), "T")[0]
 		u += "list.json?limit=3&offset=0&sort=desc&afterDate=" + after
 	}
+
 	sleep, err := m.client.Get(u)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -81,6 +82,8 @@ func (m *myHandler) getAndCacheSleep(w http.ResponseWriter, r *http.Request) {
 		io.Copy(os.Stdout, sleep.Body)
 		return
 	}
+
+	fmt.Println("Got 200 OK from fitbit API for %q", u)
 
 	defer func() {
 		if err := r.Body.Close(); err != nil {
