@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
@@ -89,15 +88,16 @@ func (m *myHandler) getAndCacheSleep(w http.ResponseWriter, r *http.Request) {
 		}
 	}()
 
-	data := map[string]interface{}{}
-	dec := json.NewDecoder(r.Body)
-	if err := dec.Decode(&data); err != nil {
-		fmt.Println("Error decoding body: ", err.Error())
-		return
-	}
+	io.Copy(w, r.Body)
+	//data := map[string]interface{}{}
+	//dec := json.NewDecoder(r.Body)
+	//if err := dec.Decode(&data); err != nil {
+	//fmt.Println("Error decoding body: ", err.Error())
+	//return
+	//}
 
-	fmt.Println("Data: %+v\n", data)
-	fmt.Fprintf(w, "%v", data)
+	//fmt.Println("Data: %+v\n", data)
+	//fmt.Fprintf(w, "%v", data)
 }
 
 func (m *myHandler) handleCallback(w http.ResponseWriter, r *http.Request) {
