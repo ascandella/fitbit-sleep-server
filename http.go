@@ -87,7 +87,7 @@ func (m *myHandler) getAndCacheSleep(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Printf("Got 200 OK from fitbit API for %q\n", u)
+	m.log.Info("Got 200 OK from fitbit API", zap.String("url", u))
 
 	defer func() {
 		if err := sleep.Body.Close(); err != nil {
