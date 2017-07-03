@@ -100,8 +100,7 @@ func (m *myHandler) getAndCacheSleep(w http.ResponseWriter, r *http.Request) {
 	}
 
 	fmt.Printf("Data: %+v\n", log)
-	fmt.Fprintf(w, "%v", log)
-	fmt.Fprintf(w, "%v", log.MostRecent())
+	sleepTemplate.Execute(w, log.MostRecent())
 }
 
 func (m *myHandler) handleCallback(w http.ResponseWriter, r *http.Request) {
