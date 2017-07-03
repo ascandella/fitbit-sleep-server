@@ -18,9 +18,6 @@
 PreCommit:
   TrailingWhitespace:
     enabled: true
-  CustomScript:
-    enabled: true
-    required_executable: '.bin/make'
 
 
 verify_signatatures: false

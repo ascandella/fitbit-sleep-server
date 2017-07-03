@@ -2,9 +2,10 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
+	"time"
 
 	"golang.org/x/oauth2"
 )
@@ -43,12 +44,56 @@ func (m *myHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	case "/":
 		if m.token.Valid() {
 			fmt.Fprintf(w, "Have valid token!\n")
+			m.getAndCacheSleep(w, r)
 			return
 		}
 
-		// TODO
-		io.WriteString(w, "shouldn't get here\n")
+		fmt.Println("No token -- need to hit /aiden to authorize")
+		http.Error(w, "no token -- aiden must have screwed something up", http.StatusInternalServerError)
 	}
+}
+
+const sleepEndpoint = "GET https://api.fitbit.com/1.2/user/-/sleep/"
+
+func (m *myHandler) getAndCacheSleep(w http.ResponseWriter, r *http.Request) {
+	// TODO caching
+	url := sleepEndpoint
+	date := r.URL.Query().Get("date")
+	if date != "" {
+		url += "/date/" + date + ".json"
+	} else {
+		afterTime := time.Now().Add(-72 * time.Hour)
+		after := afterTime.Format(time.RFC3339)
+		url += "list.json?limit=3&offset=0&afterDate=" + after[:len(after)-2]
+	}
+	sleep, err := m.client.Get(url)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		fmt.Printf("Got error from %q: %s\n", url, err.Error())
+		return
+	}
+
+	if sleep.StatusCode != http.StatusOK {
+		http.Error(w, "Got non-200 from fitbit sleep API", http.StatusInternalServerError)
+		fmt.Printf("Got bad status from %q: %s\n", url, sleep.Status)
+		return
+	}
+
+	defer func() {
+		if err := r.Body.Close(); err != nil {
+			fmt.Printf("[ERROR] Couldn't close body: %s", err.Error())
+		}
+	}()
+
+	data := map[string]interface{}{}
+	dec := json.NewDecoder(r.Body)
+	if err := dec.Decode(&data); err != nil {
+		fmt.Println("Error decoding body: ", err.Error())
+		return
+	}
+
+	fmt.Println("Data: %+v\n", data)
+	fmt.Fprintf(w, "%v", data)
 }
 
 func (m *myHandler) handleCallback(w http.ResponseWriter, r *http.Request) {
@@ -64,6 +109,13 @@ func (m *myHandler) handleCallback(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Unable to exchange oauth2 code", http.StatusInternalServerError)
 		return
 	}
+	m.registerToken(tkn)
+
+	fmt.Println("Redirecting home")
+	http.Redirect(w, r, "/", http.StatusFound)
+}
+
+func (m *myHandler) registerToken(tkn *oauth2.Token) {
 	m.token = tkn
 
 	fmt.Printf("Token: %+v\n", tkn)
@@ -73,6 +125,4 @@ func (m *myHandler) handleCallback(w http.ResponseWriter, r *http.Request) {
 
 	m.client = oauth2.NewClient(context.Background(), m.tknSource)
 
-	fmt.Println("Redirecting home")
-	http.Redirect(w, r, "/", http.StatusFound)
 }
