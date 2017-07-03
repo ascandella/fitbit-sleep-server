@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
@@ -83,7 +84,7 @@ func (m *myHandler) getAndCacheSleep(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Println("Got 200 OK from fitbit API for %q", u)
+	fmt.Printf("Got 200 OK from fitbit API for %q\n", u)
 
 	defer func() {
 		if err := r.Body.Close(); err != nil {
@@ -91,16 +92,16 @@ func (m *myHandler) getAndCacheSleep(w http.ResponseWriter, r *http.Request) {
 		}
 	}()
 
-	io.Copy(w, r.Body)
-	//data := map[string]interface{}{}
-	//dec := json.NewDecoder(r.Body)
-	//if err := dec.Decode(&data); err != nil {
-	//fmt.Println("Error decoding body: ", err.Error())
-	//return
-	//}
+	log := sleepLog{}
+	dec := json.NewDecoder(r.Body)
+	if err := dec.Decode(&log); err != nil {
+		fmt.Println("Error decoding body: ", err.Error())
+		return
+	}
 
-	//fmt.Println("Data: %+v\n", data)
-	//fmt.Fprintf(w, "%v", data)
+	fmt.Printf("Data: %+v\n", log)
+	fmt.Fprintf(w, "%v", log)
+	fmt.Fprintf(w, "%v", log.MostRecent())
 }
 
 func (m *myHandler) handleCallback(w http.ResponseWriter, r *http.Request) {
