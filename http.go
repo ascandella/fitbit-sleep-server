@@ -54,7 +54,7 @@ func (m *myHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-const sleepEndpoint = "GET https://api.fitbit.com/1.2/user/-/sleep/"
+const sleepEndpoint = "https://api.fitbit.com/1.2/user/-/sleep/"
 
 func (m *myHandler) getAndCacheSleep(w http.ResponseWriter, r *http.Request) {
 	// TODO caching
