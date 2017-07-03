@@ -67,7 +67,7 @@ func (m *myHandler) getAndCacheSleep(w http.ResponseWriter, r *http.Request) {
 	} else {
 		afterTime := time.Now().Add(-72 * time.Hour)
 		after := strings.Split(afterTime.Format(time.RFC3339), "T")[0]
-		u += "list.json?limit=3&offset=0&afterDate=" + after
+		u += "list.json?limit=3&offset=0&sort=desc&afterDate=" + after
 	}
 	sleep, err := m.client.Get(u)
 	if err != nil {
