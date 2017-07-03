@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"net/url"
 	"time"
 
 	"golang.org/x/oauth2"
@@ -43,7 +44,7 @@ func (m *myHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, redir, http.StatusFound)
 	case "/":
 		if m.token.Valid() {
-			fmt.Fprintf(w, "Have valid token!\n")
+			fmt.Println("Have valid token")
 			m.getAndCacheSleep(w, r)
 			return
 		}
@@ -57,25 +58,25 @@ const sleepEndpoint = "GET https://api.fitbit.com/1.2/user/-/sleep/"
 
 func (m *myHandler) getAndCacheSleep(w http.ResponseWriter, r *http.Request) {
 	// TODO caching
-	url := sleepEndpoint
+	u := sleepEndpoint
 	date := r.URL.Query().Get("date")
 	if date != "" {
-		url += "/date/" + date + ".json"
+		u += "/date/" + date + ".json"
 	} else {
 		afterTime := time.Now().Add(-72 * time.Hour)
 		after := afterTime.Format(time.RFC3339)
-		url += "list.json?limit=3&offset=0&afterDate=" + after[:len(after)-2]
+		u += "list.json?limit=3&offset=0&afterDate=" + url.PathEscape(after[:len(after)-1])
 	}
-	sleep, err := m.client.Get(url)
+	sleep, err := m.client.Get(u)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
-		fmt.Printf("Got error from %q: %s\n", url, err.Error())
+		fmt.Printf("Got error from %q: %s\n", u, err.Error())
 		return
 	}
 
 	if sleep.StatusCode != http.StatusOK {
 		http.Error(w, "Got non-200 from fitbit sleep API", http.StatusInternalServerError)
-		fmt.Printf("Got bad status from %q: %s\n", url, sleep.Status)
+		fmt.Printf("Got bad status from %q: %s\n", u, sleep.Status)
 		return
 	}
 
