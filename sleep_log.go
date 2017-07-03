@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"fmt"
+	"math"
 	"strings"
 	"time"
 
@@ -33,9 +34,13 @@ func (s sleep) FriendlyDuration() string {
 	ms := time.Duration(s.MinutesAsleep) * time.Minute
 	out := &bytes.Buffer{}
 	if ms.Hours() >= 1.0 {
-		fmt.Fprintf(out, "%.0f hours, ", ms.Hours())
+		fmt.Fprintf(out, "%.0f hour", ms.Hours())
+		if ms.Hours() >= 2.0 {
+			fmt.Fprint(out, "s")
+		}
+		fmt.Fprint(out, ", ")
 	}
-	fmt.Fprintf(out, "%.0f minutes", ms.Minutes())
+	fmt.Fprintf(out, "%.0f minutes", math.Mod(ms.Minutes(), 60.0))
 	return out.String()
 }
 
