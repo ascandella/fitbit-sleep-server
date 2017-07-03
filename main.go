@@ -16,7 +16,7 @@ var (
 	credentials = flag.String("credentials", defaultCredentials, "where to load secrets from")
 	portFlag    = flag.String("port", "3030", "port to bind")
 	tokenFile   = flag.String("token", "", "load token from this file for testing")
-	redisBind   = flag.String("redis", ":6379", "location of redis server (optional)")
+	redisBind   = flag.String("redis", "127.0.0.1:6379", "location of redis server (optional)")
 )
 
 func init() {

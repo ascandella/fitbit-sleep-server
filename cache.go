@@ -1,7 +1,10 @@
 package main
 
-import "time"
-import "github.com/garyburd/redigo/redis"
+import (
+	"time"
+
+	"github.com/garyburd/redigo/redis"
+)
 
 func newPool(addr string) *redis.Pool {
 	return &redis.Pool{
