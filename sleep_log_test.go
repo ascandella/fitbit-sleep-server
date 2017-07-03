@@ -28,5 +28,5 @@ func TestFriendlyDuration_MultiHour(t *testing.T) {
 
 func TestStartTime(t *testing.T) {
 	s := sleep{StartTime: "2017-07-01T15:04:05.00"}
-	assert.Equal(t, s.Start(), "Saturday, July 1nd, 15:04 PDT")
+	assert.Equal(t, s.Start(), "Saturday, July 1, 15:04 PDT")
 }

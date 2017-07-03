@@ -52,5 +52,5 @@ func (s sleep) Start() string {
 		zap.L().Error("Couldn't parse time", zap.Error(err))
 	}
 
-	return t.Format("Monday, January 2nd, 15:04 MST")
+	return t.Format("Monday, January 2, 15:04 MST")
 }
