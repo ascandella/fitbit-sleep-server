@@ -16,6 +16,7 @@ var (
 	credentials = flag.String("credentials", defaultCredentials, "where to load secrets from")
 	portFlag    = flag.String("port", "3030", "port to bind")
 	tokenFile   = flag.String("token", "", "load token from this file for testing")
+	redisBind   = flag.String("redis", ":6379", "location of redis server (optional)")
 )
 
 func init() {
@@ -25,7 +26,11 @@ func init() {
 func main() {
 	cfg, err := loadConfigFromJSON(*credentials)
 	if err != nil {
-		log.Fatal(err)
+		if tokenFile == nil || *tokenFile == "" {
+			log.Fatal(err)
+		} else {
+			log.Printf("No secrets available, will attempt token load")
+		}
 	}
 
 	port := os.Getenv("AI_LIFE_PORT")
@@ -43,7 +48,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	handler := newHandler(cfg, logger)
+	handler := newHandler(cfg, logger, newPool(*redisBind))
 
 	if tokenFile != nil && *tokenFile != "" {
 		logger.Info("Loading token from file", zap.String("location", *tokenFile))

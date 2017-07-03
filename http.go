@@ -10,10 +10,14 @@ import (
 	"strings"
 	"time"
 
+	"github.com/garyburd/redigo/redis"
+
 	"go.uber.org/zap"
 
 	"golang.org/x/oauth2"
 )
+
+const redisKey = "ai-life:token"
 
 type myHandler struct {
 	cfg       oauth2.Config
@@ -22,15 +26,17 @@ type myHandler struct {
 	tknSource oauth2.TokenSource
 	client    *http.Client
 	log       *zap.Logger
+	pool      *redis.Pool
 }
 
-func newHandler(cfg oauth2.Config, log *zap.Logger) *myHandler {
+func newHandler(cfg oauth2.Config, log *zap.Logger, pool *redis.Pool) *myHandler {
 	state := randStringRunes(24)
 
 	h := myHandler{
 		cfg:   cfg,
 		state: state,
 		log:   log,
+		pool:  pool,
 	}
 
 	return &h
@@ -53,6 +59,15 @@ func (m *myHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			m.log.Info("Have valid token")
 			m.getAndCacheSleep(w, r)
 			return
+		}
+		conn := m.pool.Get()
+		defer conn.Close()
+		tkn, err := conn.Do("GET", redisKey)
+		if err != nil {
+			m.log.Error("Unable to fetch token from redis", zap.Error(err))
+		}
+		if tkn, ok := tkn.(*oauth2.Token); ok {
+			m.registerToken(tkn)
 		}
 		m.log.Error("No token -- need to hit /aiden to authorize")
 		http.Error(w, "no token -- aiden must have screwed something up", http.StatusInternalServerError)
@@ -131,6 +146,12 @@ func (m *myHandler) registerToken(tkn *oauth2.Token) {
 	m.log.Info("Registering token", zap.String("token", tkn.AccessToken))
 	bs, _ := json.Marshal(tkn)
 	fmt.Printf(string(bs))
+	conn := m.pool.Get()
+	defer conn.Close()
+	if _, err := conn.Do("SET", redisKey, bs); err != nil {
+		m.log.Error("Unable to save token to redis", zap.Error(err))
+	}
+
 	m.tknSource = oauth2.ReuseTokenSource(tkn, nil)
 
 	m.log.Debug("Got token source", zap.String("source", fmt.Sprintf("%s", m.tknSource)))
