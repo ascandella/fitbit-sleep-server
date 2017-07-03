@@ -34,7 +34,7 @@ func (s sleep) FriendlyDuration() string {
 	ms := time.Duration(s.MinutesAsleep) * time.Minute
 	out := &bytes.Buffer{}
 	if ms.Hours() >= 1.0 {
-		fmt.Fprintf(out, "%.0f hour", ms.Hours())
+		fmt.Fprintf(out, "%.0f hour", math.Floor(ms.Hours()))
 		if ms.Hours() >= 2.0 {
 			fmt.Fprint(out, "s")
 		}
