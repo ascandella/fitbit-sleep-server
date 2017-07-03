@@ -87,13 +87,13 @@ func (m *myHandler) getAndCacheSleep(w http.ResponseWriter, r *http.Request) {
 	fmt.Printf("Got 200 OK from fitbit API for %q\n", u)
 
 	defer func() {
-		if err := r.Body.Close(); err != nil {
+		if err := sleep.Body.Close(); err != nil {
 			fmt.Printf("[ERROR] Couldn't close body: %s", err.Error())
 		}
 	}()
 
 	log := sleepLog{}
-	dec := json.NewDecoder(r.Body)
+	dec := json.NewDecoder(sleep.Body)
 	if err := dec.Decode(&log); err != nil {
 		fmt.Println("Error decoding body: ", err.Error())
 		return
