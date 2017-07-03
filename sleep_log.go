@@ -35,10 +35,10 @@ func (s sleep) MostRecent() string {
 func (s sleep) Start() string {
 	chopped := strings.Split(s.StartTime, ".")[0]
 	full := chopped
-	t, err := time.Parse("2006-01-02T15:04:05", full)
+	t, err := time.ParseInLocation("2006-01-02T15:04:05", full, location)
 	if err != nil {
 		zap.L().Error("Couldn't parse time", zap.Error(err))
 	}
 
-	return t.In(location).Format(time.RFC1123)
+	return t.Format(time.RFC1123)
 }
