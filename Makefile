@@ -1,5 +1,6 @@
 IMAGE_NAME := ai-life
 CONTAINER_NAME ?= $(IMAGE_NAME)
+CREDENTIALS ?= /etc/ai-life
 
 .PHONY: build-docker
 build-docker:
@@ -9,8 +10,9 @@ build-docker:
 run-docker:
 	docker run \
 		--name $(CONTAINER_NAME) \
+		--volume /config $(CREDENTIALS)
 		--publish 3030:3030 \
-		$(IMAGE_NAME)
+		$(IMAGE_NAME) -credentials /config/secrets.json
 
 .PHONY: kill-docker
 kill-docker:
