@@ -33,46 +33,46 @@ func registerServeMux(handler http.Handler) {
 }
 
 func (m *myHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	if r.URL.Path == "/oauth2/callback" {
-		if r.URL.Query().Get("state") != m.state {
-			http.Error(w, "bad state", http.StatusForbidden)
-			return
-		}
-		fmt.Printf("Got callback: %+v\n", r.URL.Query())
-
-		tkn, err := m.cfg.Exchange(context.Background(), r.URL.Query().Get("code"))
-		if err != nil {
-			fmt.Printf("Error exchanging code: %+v\n", err)
-			http.Error(w, "Unable to exchange oauth2 code", http.StatusInternalServerError)
-			return
-		}
-		m.token = tkn
-
-		fmt.Printf("Token: %+v\n", tkn)
-		m.tknSource = oauth2.ReuseTokenSource(tkn, nil)
-
-		fmt.Println("Got token source: ", m.tknSource)
-
-		m.client = oauth2.NewClient(context.Background(), m.tknSource)
-
-		fmt.Println("Redirecting home")
-		http.Redirect(w, r, "/", http.StatusFound)
-
-		return
-	}
-
-	if m.token == nil {
+	switch r.URL.Path {
+	case "/oauth2/callback":
+		m.handleCallback(w, r)
+	case "/aiden":
 		redir := m.cfg.AuthCodeURL(m.state)
 		fmt.Println("Redirecting user to oauth2 fitbit: ", redir)
 		http.Redirect(w, r, redir, http.StatusFound)
+	case "/":
+		if m.token.Valid() {
+			fmt.Fprintf(w, "Have valid token!\n")
+			return
+		}
+
+		// TODO
+		io.WriteString(w, "shouldn't get here\n")
+	}
+}
+
+func (m *myHandler) handleCallback(w http.ResponseWriter, r *http.Request) {
+	if r.URL.Query().Get("state") != m.state {
+		http.Error(w, "bad state", http.StatusForbidden)
 		return
 	}
+	fmt.Printf("Got callback: %+v\n", r.URL.Query())
 
-	if m.token.Valid() {
-		fmt.Fprintf(w, "Have valid token!")
+	tkn, err := m.cfg.Exchange(context.Background(), r.URL.Query().Get("code"))
+	if err != nil {
+		fmt.Printf("Error exchanging code: %+v\n", err)
+		http.Error(w, "Unable to exchange oauth2 code", http.StatusInternalServerError)
 		return
 	}
+	m.token = tkn
 
-	// TODO
-	io.WriteString(w, "shouldn't get here\n")
+	fmt.Printf("Token: %+v\n", tkn)
+	m.tknSource = oauth2.ReuseTokenSource(tkn, nil)
+
+	fmt.Println("Got token source: ", m.tknSource)
+
+	m.client = oauth2.NewClient(context.Background(), m.tknSource)
+
+	fmt.Println("Redirecting home")
+	http.Redirect(w, r, "/", http.StatusFound)
 }

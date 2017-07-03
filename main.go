@@ -20,6 +20,7 @@ func main() {
 
 	handler := newHandler(cfg)
 	registerServeMux(handler)
+
 	fmt.Println("Ready to serve on port: ", port)
 	http.ListenAndServe(fmt.Sprintf(":%s", port), nil)
 }

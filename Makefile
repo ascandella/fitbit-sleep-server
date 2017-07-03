@@ -16,3 +16,9 @@ run-docker:
 kill-docker:
 	docker stop -t 15 $(CONTAINER_NAME)
 	docker rm $(CONTAINER_NAME)
+
+.PHONY: test
+test:
+	@go test -v .
+
+.DEFAULT_GOAL := test

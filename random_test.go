@@ -6,7 +6,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestFunction(t *testing.T) {
+func TestRandom(t *testing.T) {
 	r := randStringRunes(48)
 	assert.Equal(t, 48, len(r))
 }
