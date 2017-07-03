@@ -10,7 +10,7 @@ build-docker:
 run-docker:
 	docker run \
 		--name $(CONTAINER_NAME) \
-		--volume /config $(CREDENTIALS) \
+		--volume /config:$(CREDENTIALS) \
 		--publish 3030:3030 \
 		$(IMAGE_NAME) -credentials /config/secrets.json
 
