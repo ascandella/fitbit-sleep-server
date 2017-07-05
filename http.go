@@ -117,10 +117,11 @@ func (m *myHandler) getAndCacheSleep(w http.ResponseWriter, r *http.Request) {
 
 func (m *myHandler) handleCallback(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Query().Get("state") != m.state {
+		m.log.Error("State mismatch", zap.String("ours", m.state), zap.String("theirs", r.URL.Query().Get("state")))
 		http.Error(w, "bad state", http.StatusForbidden)
 		return
 	}
-	m.log.Info("Got callback: %+v\n", zap.String("query", r.URL.Query().Encode()))
+	m.log.Info("Handling oauth2 callback with good state", zap.String("query", r.URL.Query().Encode()))
 
 	tkn, err := m.cfg.Exchange(context.Background(), r.URL.Query().Get("code"))
 	if err != nil {
