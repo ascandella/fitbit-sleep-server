@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"net/http"
 	"os"
 	"strings"
@@ -27,16 +28,17 @@ type myHandler struct {
 	client    *http.Client
 	log       *zap.Logger
 	pool      *redis.Pool
+	appConfig appConfig
 }
 
-func newHandler(cfg oauth2.Config, log *zap.Logger, pool *redis.Pool) *myHandler {
+func newHandler(cfg oauth2.Config, appConf appConfig) *myHandler {
 	state := randStringRunes(24)
 
 	h := myHandler{
-		cfg:   cfg,
-		state: state,
-		log:   log,
-		pool:  pool,
+		cfg:       cfg,
+		state:     state,
+		log:       appConf.log,
+		appConfig: appConf,
 	}
 
 	return &h
@@ -59,15 +61,6 @@ func (m *myHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			m.log.Info("Have valid token")
 			m.getAndCacheSleep(w, r)
 			return
-		}
-		conn := m.pool.Get()
-		defer conn.Close()
-		tkn, err := conn.Do("GET", redisKey)
-		if err != nil {
-			m.log.Error("Unable to fetch token from redis", zap.Error(err))
-		}
-		if tkn, ok := tkn.(*oauth2.Token); ok {
-			m.registerToken(tkn)
 		}
 		m.log.Error("No token -- need to hit /aiden to authorize")
 		http.Error(w, "no token -- aiden must have screwed something up", http.StatusInternalServerError)
@@ -134,18 +127,26 @@ func (m *myHandler) handleCallback(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("Redirecting home")
 	http.Redirect(w, r, "/", http.StatusFound)
 }
+func (m *myHandler) maybeStoreToken(tkn []byte) {
+	if m.appConfig.tokenFile == nil || *m.appConfig.tokenFile == "" {
+		m.log.Debug("No token file specified, not persisting.")
+		return
+	}
+
+	ioutil.WriteFile(*m.appConfig.tokenFile, tkn, 0600)
+}
 
 func (m *myHandler) registerToken(tkn *oauth2.Token) {
 	m.token = tkn
 
 	m.log.Info("Registering token", zap.String("token", tkn.AccessToken))
-	bs, _ := json.Marshal(tkn)
-	fmt.Printf(string(bs))
-	conn := m.pool.Get()
-	defer conn.Close()
-	if _, err := conn.Do("SET", redisKey, bs); err != nil {
-		m.log.Error("Unable to save token to redis", zap.Error(err))
+	bs, err := json.Marshal(tkn)
+	if err != nil {
+		m.log.Error("Unable to marshal token", zap.Error(err))
+		return
 	}
+	m.maybeStoreToken(bs)
+	fmt.Printf(string(bs))
 
 	m.tknSource = oauth2.ReuseTokenSource(tkn, oauth2.StaticTokenSource(tkn))
 

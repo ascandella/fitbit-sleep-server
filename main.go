@@ -15,8 +15,7 @@ import (
 var (
 	credentials = flag.String("credentials", defaultCredentials, "where to load secrets from")
 	portFlag    = flag.String("port", "3030", "port to bind")
-	tokenFile   = flag.String("token", "", "load token from this file for testing")
-	redisBind   = flag.String("redis", "127.0.0.1:6379", "location of redis server (optional)")
+	tokenFile   = flag.String("token", "", "load token from this file")
 )
 
 func init() {
@@ -48,7 +47,12 @@ func main() {
 		log.Fatal(err)
 	}
 
-	handler := newHandler(cfg, logger, newPool(*redisBind))
+	appCfg := appConfig{
+		tokenFile: tokenFile,
+		log:       logger,
+	}
+
+	handler := newHandler(cfg, appCfg)
 
 	if tokenFile != nil && *tokenFile != "" {
 		logger.Info("Loading token from file", zap.String("location", *tokenFile))
