@@ -1,0 +1,12 @@
+[Unit]
+Description=Ai-Life docker
+After=docker.service
+
+[Service]
+Restart=on-failure
+ExecStart=/usr/bin/make build-docker run-docker
+WorkingDirectory=/opt/ai-life
+ExecStop=/usr/bin/make build-docker kill-docker
+
+[Install]
+WantedBy=multi-user.target
