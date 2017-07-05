@@ -16,7 +16,7 @@ var sleepTemplate = template.Must(template.New("main").Parse(`
 <body>
 
 	<div class="container">
-		<h3>How much sleep did aiden get?</h3>
+		<h3 class="page-header">How much sleep did aiden get?</h3>
 		<p class="lead">{{ .FriendlyDuration }}</p>
 
 		<h3>Start</h3>
