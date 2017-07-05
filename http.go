@@ -141,7 +141,6 @@ func (m *myHandler) registerToken(tkn *oauth2.Token) {
 		return
 	}
 	m.maybeStoreToken(bs)
-	fmt.Printf(string(bs))
 
 	m.tknSource = oauth2.ReuseTokenSource(tkn, oauth2.StaticTokenSource(tkn))
 
