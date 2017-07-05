@@ -51,7 +51,7 @@ func (m *myHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	case "/oauth2/callback":
 		m.handleCallback(w, r)
 	case "/aiden":
-		redir := m.cfg.AuthCodeURL(m.state)
+		redir := m.cfg.AuthCodeURL(m.state, oauth2.AccessTypeOffline)
 		m.log.Info("Redirecting user to oauth2 fitbit", zap.String("url", redir))
 		http.Redirect(w, r, redir, http.StatusFound)
 	case "/":
@@ -146,7 +146,7 @@ func (m *myHandler) registerToken(tkn *oauth2.Token) {
 		m.log.Error("Unable to save token to redis", zap.Error(err))
 	}
 
-	m.tknSource = oauth2.ReuseTokenSource(tkn, nil)
+	m.tknSource = oauth2.ReuseTokenSource(tkn, oauth2.StaticTokenSource(tkn))
 
 	m.log.Debug("Got token source", zap.String("source", fmt.Sprintf("%s", m.tknSource)))
 
