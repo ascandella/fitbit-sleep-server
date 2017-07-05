@@ -22,8 +22,6 @@ type myHandler struct {
 	cfg       oauth2.Config
 	state     string
 	token     *oauth2.Token
-	tknSource oauth2.TokenSource
-	client    *http.Client
 	log       *zap.Logger
 	appConfig appConfig
 }
@@ -70,7 +68,10 @@ func (m *myHandler) getAndCacheSleep(w http.ResponseWriter, r *http.Request) {
 	after := strings.Split(afterTime.Format(time.RFC3339), "T")[0]
 	u := sleepEndpoint + "list.json?limit=3&offset=0&sort=desc&afterDate=" + after
 
-	sleep, err := m.client.Get(u)
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	client := m.cfg.Client(ctx, m.token)
+	sleep, err := client.Get(u)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		m.log.Error("Got error from from Fitbit API", zap.String("url", u), zap.Error(err))
@@ -122,29 +123,25 @@ func (m *myHandler) handleCallback(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("Redirecting home")
 	http.Redirect(w, r, "/", http.StatusFound)
 }
-func (m *myHandler) maybeStoreToken(tkn []byte) {
+
+func (m *myHandler) maybeStoreToken(tkn *oauth2.Token) {
 	if m.appConfig.tokenFile == nil || *m.appConfig.tokenFile == "" {
 		m.log.Debug("No token file specified, not persisting.")
 		return
 	}
 
-	ioutil.WriteFile(*m.appConfig.tokenFile, tkn, 0600)
-}
-
-func (m *myHandler) registerToken(tkn *oauth2.Token) {
-	m.token = tkn
-
-	m.log.Info("Registering token", zap.String("token", tkn.AccessToken))
 	bs, err := json.Marshal(tkn)
 	if err != nil {
 		m.log.Error("Unable to marshal token", zap.Error(err))
 		return
 	}
-	m.maybeStoreToken(bs)
 
-	m.tknSource = oauth2.ReuseTokenSource(tkn, oauth2.StaticTokenSource(tkn))
+	ioutil.WriteFile(*m.appConfig.tokenFile, bs, 0600)
+}
 
-	m.log.Debug("Got token source", zap.String("source", fmt.Sprintf("%s", m.tknSource)))
+func (m *myHandler) registerToken(tkn *oauth2.Token) {
+	m.log.Info("Registering token", zap.String("token", tkn.AccessToken))
+	m.token = tkn
 
-	m.client = oauth2.NewClient(context.Background(), m.tknSource)
+	m.maybeStoreToken(tkn)
 }
