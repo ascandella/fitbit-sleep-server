@@ -11,14 +11,12 @@ import (
 	"strings"
 	"time"
 
-	"github.com/garyburd/redigo/redis"
-
 	"go.uber.org/zap"
 
 	"golang.org/x/oauth2"
 )
 
-const redisKey = "ai-life:token"
+const sleepEndpoint = "https://api.fitbit.com/1.2/user/-/sleep/"
 
 type myHandler struct {
 	cfg       oauth2.Config
@@ -27,7 +25,6 @@ type myHandler struct {
 	tknSource oauth2.TokenSource
 	client    *http.Client
 	log       *zap.Logger
-	pool      *redis.Pool
 	appConfig appConfig
 }
 
@@ -66,8 +63,6 @@ func (m *myHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "no token -- aiden must have screwed something up", http.StatusInternalServerError)
 	}
 }
-
-const sleepEndpoint = "https://api.fitbit.com/1.2/user/-/sleep/"
 
 func (m *myHandler) getAndCacheSleep(w http.ResponseWriter, r *http.Request) {
 	// TODO caching

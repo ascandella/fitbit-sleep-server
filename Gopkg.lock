@@ -8,12 +8,6 @@
   version = "v1.1.0"
 
 [[projects]]
-  name = "github.com/garyburd/redigo"
-  packages = ["internal","redis"]
-  revision = "433969511232c397de61b1442f9fd49ec06ae9ba"
-  version = "v1.1.0"
-
-[[projects]]
   branch = "master"
   name = "github.com/golang/protobuf"
   packages = ["proto"]
@@ -64,6 +58,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "e9f982f8e3644b97900eafc9934c1edb90526b90c2d6f64097941988538b9faf"
+  inputs-digest = "46abe451a7f9b9aeb97620f42a3eb22c64ea2fabd2d338c512fda437ee3dbb0b"
   solver-name = "gps-cdcl"
   solver-version = 1
