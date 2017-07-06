@@ -4,3 +4,36 @@ Fitbit Sleep Server
 -------------------
 
 This is the code that powers [aidens.life](https://aidens.life/)
+
+Deploying
+=========
+
+I use [Caddy](https://caddyserver.com) and you probably should too. This is how
+I have my host configured to auto-deploy via `systemctl`, `Make`, and Webhooks:
+
+```
+aidens.life {
+  root /opt/ai-life
+
+  git {
+    repo https://github.com/sectioneight/fitbit-sleep-server.git
+
+    key /home/caddy/.ssh/id_rsa-life
+    hook /webhook <redacted>
+    then sudo /bin/systemctl restart ai-life
+  }
+
+  proxy / localhost:3030 {
+    except /webhook
+    transparent
+  }
+}
+```
+
+This requires an appropriate entry in `sudoers.d`, such as:
+
+```
+caddy ALL=NOPASSWD: /bin/systemctl restart ai-life
+```
+
+Where `caddy` is the user your caddy server is running under.
