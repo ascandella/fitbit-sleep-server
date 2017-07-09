@@ -3,9 +3,9 @@ package main
 import (
 	"testing"
 
-	"code.ndella.com/ai-life/internal/testutils"
 	"golang.org/x/oauth2"
 
+	"github.com/sectioneight/fitbit-sleep-server/internal/testutils"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
