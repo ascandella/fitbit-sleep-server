@@ -63,6 +63,9 @@ func (m *myHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, redir, http.StatusFound)
 	case "/":
 		m.log.Info("Serving home - token valid?", zap.Bool("valid", m.token.Valid()))
+		if !m.token.Valid() {
+			m.log.Warn("Will need token refresh")
+		}
 		m.getAndCacheSleep(w, r)
 	}
 }
