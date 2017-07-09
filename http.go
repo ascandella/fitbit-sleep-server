@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"sync"
 	"time"
 
 	"go.uber.org/zap"
@@ -16,7 +17,10 @@ import (
 	"golang.org/x/oauth2"
 )
 
-const sleepEndpoint = "https://api.fitbit.com/1.2/user/-/sleep/"
+const (
+	sleepEndpoint = "https://api.fitbit.com/1.2/user/-/sleep/"
+	cacheTime     = 30 * time.Minute
+)
 
 type myHandler struct {
 	cfg       oauth2.Config
@@ -24,16 +28,22 @@ type myHandler struct {
 	token     *oauth2.Token
 	log       *zap.Logger
 	appConfig appConfig
+	mu        sync.Mutex
+	lastFetch time.Time
+	cachedLog sleepLog
 }
 
 func newHandler(cfg oauth2.Config, appConf appConfig) *myHandler {
 	state := randStringRunes(24)
 
 	h := myHandler{
-		cfg:       cfg,
-		state:     state,
-		log:       appConf.log,
 		appConfig: appConf,
+		cfg:       cfg,
+		log:       appConf.log,
+		mu:        sync.Mutex{},
+		state:     state,
+		cachedLog: sleepLog{},
+		lastFetch: time.Now().Add(-cacheTime),
 	}
 
 	return &h
@@ -52,18 +62,22 @@ func (m *myHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		m.log.Info("Redirecting user to oauth2 fitbit", zap.String("url", redir))
 		http.Redirect(w, r, redir, http.StatusFound)
 	case "/":
-		if m.token.Valid() {
-			m.log.Info("Have valid token")
-			m.getAndCacheSleep(w, r)
-			return
-		}
-		m.log.Error("No token -- need to hit /aiden to authorize")
-		http.Error(w, "no token -- aiden must have screwed something up", http.StatusInternalServerError)
+		m.log.Info("Serving home - token valid?", zap.Bool("valid", m.token.Valid()))
+		m.getAndCacheSleep(w, r)
 	}
 }
 
 func (m *myHandler) getAndCacheSleep(w http.ResponseWriter, r *http.Request) {
-	// TODO caching
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
+	delta := time.Now().Sub(m.lastFetch)
+	if delta < cacheTime && len(m.cachedLog.Sleep) > 0 {
+		m.log.Info("Returning cached version", zap.Duration("delta", delta))
+		m.showLog(w, m.cachedLog)
+		return
+	}
+
 	afterTime := time.Now().Add(-72 * time.Hour)
 	after := strings.Split(afterTime.Format(time.RFC3339), "T")[0]
 	u := sleepEndpoint + "list.json?limit=3&offset=0&sort=desc&afterDate=" + after
@@ -100,7 +114,14 @@ func (m *myHandler) getAndCacheSleep(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	m.log.Info("Received data", zap.Any("data", log))
+	m.lastFetch = time.Now()
+	m.cachedLog = log
+
+	m.showLog(w, log)
+}
+
+func (m *myHandler) showLog(w http.ResponseWriter, log sleepLog) {
+	m.log.Info("Displaying data", zap.Any("data", log))
 	sleepTemplate.Execute(w, log.Sleep[0])
 }
 
