@@ -18,7 +18,7 @@ Deploying
 I use [Caddy](https://caddyserver.com) and you probably should too. This is how
 I have my host configured to auto-deploy via `systemctl`, `Make`, and Webhooks:
 
-```
+```plain
 aidens.life {
   root /opt/ai-life
 
@@ -39,7 +39,7 @@ aidens.life {
 
 This requires an appropriate entry in `sudoers.d`, such as:
 
-```
+```bash
 caddy ALL=NOPASSWD: /bin/systemctl restart ai-life
 ```
 
