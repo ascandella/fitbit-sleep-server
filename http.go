@@ -143,7 +143,7 @@ func (m *myHandler) maybeStoreToken(tkn *oauth2.Token) {
 }
 
 func (m *myHandler) registerToken(tkn *oauth2.Token) {
-	m.log.Info("Registering token", zap.String("token", tkn.AccessToken))
+	m.log.Info("Registering token", zap.Any("token", tkn))
 	m.token = tkn
 
 	m.maybeStoreToken(tkn)
