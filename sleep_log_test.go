@@ -30,3 +30,8 @@ func TestStartTime(t *testing.T) {
 	s := sleep{StartTime: "2017-07-01T15:04:05.00"}
 	assert.Equal(t, s.Start(), "Saturday, July 1, 15:04 PDT")
 }
+
+func TestStartTim_InvalidTime(t *testing.T) {
+	s := sleep{StartTime: "foo bar"}
+	assert.Equal(t, "Monday, January 1, 00:00 UTC", s.Start())
+}
