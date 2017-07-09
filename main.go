@@ -66,7 +66,8 @@ func main() {
 	}
 
 	registerServeMux(handler)
+	registerSignals(handler)
 
 	logger.Info("Ready to serve ", zap.String("port", port))
-	http.ListenAndServe(fmt.Sprintf(":%s", port), nil)
+	logger.Fatal("Shutting down", zap.Error(http.ListenAndServe(fmt.Sprintf(":%s", port), nil)))
 }
