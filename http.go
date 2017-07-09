@@ -136,7 +136,10 @@ func (m *myHandler) maybeStoreToken(tkn *oauth2.Token) {
 		return
 	}
 
-	ioutil.WriteFile(*m.appConfig.tokenFile, bs, 0600)
+	m.log.Info("Writing token to file", zap.String("path", *m.appConfig.tokenFile))
+	if err := ioutil.WriteFile(*m.appConfig.tokenFile, bs, 0600); err != nil {
+		m.log.Error("Unable to save token file", zap.Error(err))
+	}
 }
 
 func (m *myHandler) registerToken(tkn *oauth2.Token) {
