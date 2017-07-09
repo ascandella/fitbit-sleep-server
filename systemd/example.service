@@ -1,5 +1,5 @@
 [Unit]
-Description=Ai-Life docker
+Description=Fitbit Sleep Server
 After=docker.service
 
 [Service]
