@@ -9,7 +9,7 @@ Systemd/Docker service
 ----------------------
 
 I run my site in a Docker container under systemd. If you'd like to do something
-similar, copy [my example](systemd/example.service) to e.g.
+similar, copy [my example service](systemd/example.service) to e.g.
 `/etc/systemd/system` and then run `systemctl daemon-reload`.
 
 Deploying
