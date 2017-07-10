@@ -149,7 +149,7 @@ func (m *myHandler) handleCallback(w http.ResponseWriter, r *http.Request) {
 	}
 	m.registerToken(tkn)
 
-	fmt.Println("Redirecting home")
+	m.log.Info("Redirecting home after successful token exchange")
 	http.Redirect(w, r, "/", http.StatusFound)
 }
 
