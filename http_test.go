@@ -1,6 +1,7 @@
 package main
 
 import (
+	"net/http/httptest"
 	"os"
 	"testing"
 
@@ -39,6 +40,13 @@ func TestRegisterToken_OK(t *testing.T) {
 func TestMaybeStoreToken_NoFile(t *testing.T) {
 	h := emptyHandler()
 	h.maybeStoreToken(nil)
+}
+
+func TestShowLog_NoData(t *testing.T) {
+	w := httptest.NewRecorder()
+	h := emptyHandler()
+	h.showLog(w, sleepLog{})
+	assert.Contains(t, w.Body.String(), "sleep data")
 }
 
 func emptyHandler() *myHandler {
