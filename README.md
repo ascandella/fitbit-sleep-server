@@ -1,19 +1,19 @@
 [![Build Status](https://travis-ci.org/sectioneight/fitbit-sleep-server.svg?branch=master)](https://travis-ci.org/sectioneight/fitbit-sleep-server)
 
 Fitbit Sleep Server
--------------------
+===================
 
 This is the code that powers [aidens.life](https://aidens.life/)
 
 Systemd/Docker service
-======================
+----------------------
 
 I run my site in a Docker container under systemd. If you'd like to do something
 similar, copy [my example](systemd/example.service) to e.g.
 `/etc/systemd/system` and then run `systemctl daemon-reload`.
 
 Deploying
-=========
+---------
 
 I use [Caddy](https://caddyserver.com) and you probably should too. This is how
 I have my host configured to auto-deploy via `systemctl`, `make`, and Webhooks:
