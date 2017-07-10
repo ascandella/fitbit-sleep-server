@@ -125,7 +125,12 @@ func (m *myHandler) getAndCacheSleep(w http.ResponseWriter, r *http.Request) {
 
 func (m *myHandler) showLog(w http.ResponseWriter, log sleepLog) {
 	m.log.Info("Displaying data", zap.Any("data", log))
-	sleepTemplate.Execute(w, log.Sleep[0])
+	if len(log.Sleep) > 0 {
+		sleepTemplate.Execute(w, log.Sleep[0])
+		return
+	}
+	http.Error(w, "No recent sleep data available", http.StatusOK)
+	m.log.Error("No sleep data available")
 }
 
 func (m *myHandler) handleCallback(w http.ResponseWriter, r *http.Request) {
