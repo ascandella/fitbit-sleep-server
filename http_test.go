@@ -36,6 +36,10 @@ func TestRegisterToken_OK(t *testing.T) {
 		})
 	})
 }
+func TestMaybeStoreToken_NoFile(t *testing.T) {
+	h := emptyHandler()
+	h.maybeStoreToken(nil)
+}
 
 func emptyHandler() *myHandler {
 	l, err := zap.NewDevelopment()
