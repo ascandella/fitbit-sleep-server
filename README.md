@@ -16,7 +16,7 @@ Deploying
 =========
 
 I use [Caddy](https://caddyserver.com) and you probably should too. This is how
-I have my host configured to auto-deploy via `systemctl`, `Make`, and Webhooks:
+I have my host configured to auto-deploy via `systemctl`, `make`, and Webhooks:
 
 ```plain
 aidens.life {
