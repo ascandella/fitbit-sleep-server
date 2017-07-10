@@ -24,8 +24,6 @@ aidens.life {
 
   git {
     repo https://github.com/sectioneight/fitbit-sleep-server.git
-
-    key /home/caddy/.ssh/id_rsa-life
     hook /webhook <redacted>
     then sudo /bin/systemctl restart ai-life
   }
