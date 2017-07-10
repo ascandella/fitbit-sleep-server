@@ -3,5 +3,8 @@ language: go
 go:
   1.8
 
+before_install:
+  - go get -u github.com/golang/lint/golint
+
 go_import_path: github.com/sectioneight/fitbit-sleep-server
 
