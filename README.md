@@ -25,7 +25,7 @@ aidens.life {
   git {
     repo https://github.com/sectioneight/fitbit-sleep-server.git
     hook /webhook <redacted>
-    then sudo /bin/systemctl restart ai-life
+    then sudo /bin/systemctl restart fitbit-sleep-server
   }
 
   proxy / localhost:3030 {

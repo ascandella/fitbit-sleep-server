@@ -4,9 +4,14 @@ After=docker.service
 
 [Service]
 Restart=on-failure
-ExecStart=/usr/bin/make build-docker run-docker
-WorkingDirectory=/opt/ai-life
-ExecStop=/usr/bin/make build-docker kill-docker
+ExecStart=/usr/bin/docker run \
+          --name fitbit-sleep-server \
+          --volume /etc/fitbit-sleep-server:/config \
+          --publish 3030:3030 \
+          fitbit-sleep-server
+WorkingDirectory=/opt/fitbit-sleep-server
+ExecStop=/usr/bin/docker stop -t 15 fitbit-sleep-server
+ExecStopPost=/usr/bin/docker rm fitbit-sleep-server
 
 [Install]
 WantedBy=multi-user.target
