@@ -67,6 +67,8 @@ func (m *myHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			m.log.Warn("Will need token refresh")
 		}
 		m.getAndCacheSleep(w, r)
+	default:
+		http.Error(w, "no such page "+r.URL.Path, http.StatusNotFound)
 	}
 }
 
