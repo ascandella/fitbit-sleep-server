@@ -57,7 +57,7 @@ func (m *myHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	switch r.URL.Path {
 	case "/oauth2/callback":
 		m.handleCallback(w, r)
-	case "/aiden":
+	case "/auth":
 		redir := m.cfg.AuthCodeURL(m.state, oauth2.AccessTypeOffline)
 		m.log.Info("Redirecting user to oauth2 fitbit", zap.String("url", redir))
 		http.Redirect(w, r, redir, http.StatusFound)
