@@ -50,6 +50,16 @@ func TestShowLog_NoData(t *testing.T) {
 	assert.Contains(t, w.Body.String(), "sleep data")
 }
 
+func TestShowLog_NotFound(t *testing.T) {
+	w := httptest.NewRecorder()
+	h := emptyHandler()
+	r := httptest.NewRequest("GET", "/aoeu", nil)
+	h.ServeHTTP(w, r)
+	body := w.Body.String()
+	assert.Contains(t, body, "no such page")
+	assert.Contains(t, body, "aoeu")
+}
+
 func emptyHandler() *myHandler {
 	l, err := zap.NewDevelopment()
 	if err != nil {
