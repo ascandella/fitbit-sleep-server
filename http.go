@@ -92,7 +92,7 @@ func (m *myHandler) getAndCacheSleep(w http.ResponseWriter, r *http.Request) {
 	client := m.cfg.Client(ctx, m.token)
 	sleep, err := client.Get(u)
 	if err != nil {
-		http.Error(w, "Unable to fetch data from fitbit API", http.StatusInternalServerError)
+		http.Error(w, "Unable to fetch data from fitbit API", http.StatusOK)
 		m.log.Error("Got error from from Fitbit API", zap.String("url", u), zap.Error(err))
 		return
 	}
